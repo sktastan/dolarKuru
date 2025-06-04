@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path'); // Import the 'path' module
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3001;
 
 // CORS options
 const corsOptions = {
