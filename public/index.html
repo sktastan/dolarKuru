@@ -1,0 +1,216 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dollar Values</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+
+        th,
+        td {
+            border: 1px solid rgb(167, 167, 167);
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Dollar Values</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Alış</th>
+                <th>Satış</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="alis"></td>
+                <td id="satis"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        function updateDollarValues() {
+            fetch('/api/dollar-value')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('alis').textContent = data.alis;
+                    document.getElementById('satis').textContent = data.satis;
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('alis').textContent = 'Error';
+                    document.getElementById('satis').textContent = 'Error';
+                });
+        }
+
+        // Initial update
+        updateDollarValues();
+
+        // Update every 10 seconds
+        setInterval(updateDollarValues, 10000);
+    </script>
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dollar Values</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+
+        th,
+        td {
+            border: 1px solid rgb(167, 167, 167);
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .new-price {
+            background-color: lightgreen;
+            transition: background-color 10s ease;
+        }
+
+        #current-values {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Dollar Values</h1>
+
+    <div id="current-values">
+        <h2>Current Values</h2>
+        <p>Alış: <span id="current-alis"></span></p>
+        <p>Satış: <span id="current-satis"></span></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Alış</th>
+                <th>Satış</th>
+            </tr>
+        </thead>
+        <tbody id="dollar-table-body">
+            <!-- Historical data will be added here -->
+        </tbody>
+    </table>
+
+    <script>
+        let previousAlis = null;
+        let previousSatis = null;
+        let rowCounter = 0;
+
+        function updateDollarValues() {
+            fetch('/api/dollar-value')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const currentAlisElement = document.getElementById('current-alis');
+                    const currentSatisElement = document.getElementById('current-satis');
+
+                    // Update current values
+                    currentAlisElement.textContent = data.alis;
+                    currentSatisElement.textContent = data.satis;
+
+                    // Check for changes and add new row if needed
+                    if (previousAlis !== null && previousSatis !== null) {
+                        if (previousAlis !== data.alis || previousSatis !== data.satis) {
+                            addNewRow(data.alis, data.satis);
+                        }
+                    }
+
+                    // Update previous values
+                    previousAlis = data.alis;
+                    previousSatis = data.satis;
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('current-alis').textContent = 'Error';
+                    document.getElementById('current-satis').textContent = 'Error';
+                });
+        }
+
+        function addNewRow(alis, satis) {
+            const tableBody = document.getElementById('dollar-table-body');
+            const newRow = document.createElement('tr');
+            const newAlisCell = document.createElement('td');
+            const newSatisCell = document.createElement('td');
+            rowCounter++;
+            newRow.id = `row-${rowCounter}`;
+
+            newAlisCell.textContent = alis;
+            newSatisCell.textContent = satis;
+
+            newRow.appendChild(newAlisCell);
+            newRow.appendChild(newSatisCell);
+
+            // Add new-price class for highlighting
+            if (previousAlis !== null && previousSatis !== null) {
+                if (previousAlis !== alis) {
+                    newAlisCell.classList.add('new-price');
+                    setTimeout(() => {
+                        newAlisCell.classList.remove('new-price');
+                    }, 10000); // Changed to 10000 (10 seconds)
+                }
+                if (previousSatis !== satis) {
+                    newSatisCell.classList.add('new-price');
+                    setTimeout(() => {
+                        newSatisCell.classList.remove('new-price');
+                    }, 10000); // Changed to 10000 (10 seconds)
+                }
+            }
+
+            // Insert the new row before the first row
+            tableBody.insertBefore(newRow, tableBody.firstChild);
+        }
+
+        // Initial update
+        updateDollarValues();
+
+        // Update every 10 seconds
+        setInterval(updateDollarValues, 10000);
+    </script>
+</body>
+
+</html>
